@@ -5,90 +5,90 @@ Amazon EC2 (Elastic Compute Cloud) instances provide scalable cloud computing ca
 
 ## 1. **Use SSH Key Pairs**
 
-SSH key pairs ensure secure login to your EC2 instances. Avoid using password-based authentication to mitigate the risk of brute-force attacks.
+SSH key pairs ensure secure login to your EC2 instances. Avoid using password-based authentication to mitigate the risk of brute-force attacks. [Learn more about SSH key pairs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html).
 
 ### CloudFormation Template:
 ```yaml
 Resources:
-  EC2Instance:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      KeyName: 'your-key-pair'
-      ImageId: 'ami-0123456789abcdef0'
-      InstanceType: 't2.micro'
+    EC2Instance:
+        Type: 'AWS::EC2::Instance'
+        Properties:
+            KeyName: 'your-key-pair'
+            ImageId: 'ami-0123456789abcdef0'
+            InstanceType: 't2.micro'
 ```
 
 Ensure you generate an SSH key pair using `ssh-keygen` and provide the public key to your EC2 instance during launch.
 
 ## 2. **Configure Security Groups**
 
-Security groups act as virtual firewalls, controlling inbound and outbound traffic to your instance. Only allow necessary traffic.
+Security groups act as virtual firewalls, controlling inbound and outbound traffic to your instance. Only allow necessary traffic. [Learn more about security groups](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-security-groups.html).
 
 ### CloudFormation Template:
 ```yaml
 Resources:
-  MySecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: 'Enable SSH and HTTP access'
-      SecurityGroupIngress:
-        - IpProtocol: 'tcp'
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp: 'your-ip-address/32'
-        - IpProtocol: 'tcp'
-          FromPort: '80'
-          ToPort: '80'
-          CidrIp: '0.0.0.0/0'
-      SecurityGroupEgress:
-        - IpProtocol: '-1'
-          FromPort: '0'
-          ToPort: '0'
-          CidrIp: '0.0.0.0/0'
+    MySecurityGroup:
+        Type: 'AWS::EC2::SecurityGroup'
+        Properties:
+            GroupDescription: 'Enable SSH and HTTP access'
+            SecurityGroupIngress:
+                - IpProtocol: 'tcp'
+                    FromPort: '22'
+                    ToPort: '22'
+                    CidrIp: 'your-ip-address/32'
+                - IpProtocol: 'tcp'
+                    FromPort: '80'
+                    ToPort: '80'
+                    CidrIp: '0.0.0.0/0'
+            SecurityGroupEgress:
+                - IpProtocol: '-1'
+                    FromPort: '0'
+                    ToPort: '0'
+                    CidrIp: '0.0.0.0/0'
 ```
 
 Restrict inbound SSH traffic to specific IP addresses and allow only necessary ports (e.g., HTTP for web servers).
 
 ## 3. **Enable IAM Roles**
 
-Use IAM roles to manage access permissions for your EC2 instance, avoiding the embedding of AWS credentials in your code.
+Use IAM roles to manage access permissions for your EC2 instance, avoiding the embedding of AWS credentials in your code. [Learn more about IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html).
 
 ### CloudFormation Template:
 ```yaml
 Resources:
-  MyIAMRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: 'Allow'
-            Principal:
-              Service: 'ec2.amazonaws.com'
-            Action: 'sts:AssumeRole'
-      ManagedPolicyArns:
-        - 'arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess'
-  
-  MyInstanceProfile:
-    Type: 'AWS::IAM::InstanceProfile'
-    Properties:
-      Roles:
-        - Ref: MyIAMRole
-  
-  EC2Instance:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      IamInstanceProfile: !Ref MyInstanceProfile
-      ImageId: 'ami-0123456789abcdef0'
-      InstanceType: 't2.micro'
-      KeyName: 'your-key-pair'
+    MyIAMRole:
+        Type: 'AWS::IAM::Role'
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    - Effect: 'Allow'
+                        Principal:
+                            Service: 'ec2.amazonaws.com'
+                        Action: 'sts:AssumeRole'
+            ManagedPolicyArns:
+                - 'arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess'
+    
+    MyInstanceProfile:
+        Type: 'AWS::IAM::InstanceProfile'
+        Properties:
+            Roles:
+                - Ref: MyIAMRole
+    
+    EC2Instance:
+        Type: 'AWS::EC2::Instance'
+        Properties:
+            IamInstanceProfile: !Ref MyInstanceProfile
+            ImageId: 'ami-0123456789abcdef0'
+            InstanceType: 't2.micro'
+            KeyName: 'your-key-pair'
 ```
 
 Attach the IAM role to your EC2 instance to manage permissions securely.
 
 ## 4. **Regularly Update and Patch**
 
-Keeping your instance's OS and applications up to date is essential for protecting against vulnerabilities.
+Keeping your instance's OS and applications up to date is essential for protecting against vulnerabilities. [Learn more about patch management](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-patch.html).
 
 ### Best Practices:
 - Enable automatic updates for your OS and software packages.
@@ -96,86 +96,86 @@ Keeping your instance's OS and applications up to date is essential for protecti
 
 ## 5. **Enable Logging and Monitoring**
 
-Monitoring your instance's activities helps detect suspicious behavior. Use CloudWatch and CloudTrail for logging and monitoring.
+Monitoring your instance's activities helps detect suspicious behavior. Use CloudWatch and CloudTrail for logging and monitoring. [Learn more about CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html) and [CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html).
 
 ### CloudFormation Template:
 ```yaml
 Resources:
-  CloudWatchAlarm:
-    Type: 'AWS::CloudWatch::Alarm'
-    Properties:
-      AlarmName: 'HighCPUUtilization'
-      MetricName: 'CPUUtilization'
-      Namespace: 'AWS/EC2'
-      Statistic: 'Average'
-      Period: '300'
-      EvaluationPeriods: '1'
-      Threshold: '80'
-      ComparisonOperator: 'GreaterThanThreshold'
-      Dimensions:
-        - Name: 'InstanceId'
-          Value: !Ref EC2Instance
-      AlarmActions:
-        - 'arn:aws:sns:us-east-1:123456789012:NotifyMe'
-      InsufficientDataActions: []
-      OKActions: []
+    CloudWatchAlarm:
+        Type: 'AWS::CloudWatch::Alarm'
+        Properties:
+            AlarmName: 'HighCPUUtilization'
+            MetricName: 'CPUUtilization'
+            Namespace: 'AWS/EC2'
+            Statistic: 'Average'
+            Period: '300'
+            EvaluationPeriods: '1'
+            Threshold: '80'
+            ComparisonOperator: 'GreaterThanThreshold'
+            Dimensions:
+                - Name: 'InstanceId'
+                    Value: !Ref EC2Instance
+            AlarmActions:
+                - 'arn:aws:sns:us-east-1:123456789012:NotifyMe'
+            InsufficientDataActions: []
+            OKActions: []
 ```
 
 Set up CloudWatch alarms for important metrics and enable CloudTrail to log all API calls.
 
 ## 6. **Use a Bastion Host**
 
-A bastion host securely manages SSH access to your EC2 instances.
+A bastion host securely manages SSH access to your EC2 instances. [Learn more about bastion hosts](https://docs.aws.amazon.com/quickstart/latest/linux-bastion/architecture.html).
 
 ### CloudFormation Template:
 ```yaml
 Resources:
-  BastionHost:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      KeyName: 'your-key-pair'
-      ImageId: 'ami-0123456789abcdef0'
-      InstanceType: 't2.micro'
-      SecurityGroupIds:
-        - Ref: BastionSecurityGroup
-  
-  BastionSecurityGroup:
-    Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: 'Bastion host security group'
-      SecurityGroupIngress:
-        - IpProtocol: 'tcp'
-          FromPort: '22'
-          ToPort: '22'
-          CidrIp: 'your-ip-address/32'
+    BastionHost:
+        Type: 'AWS::EC2::Instance'
+        Properties:
+            KeyName: 'your-key-pair'
+            ImageId: 'ami-0123456789abcdef0'
+            InstanceType: 't2.micro'
+            SecurityGroupIds:
+                - Ref: BastionSecurityGroup
+    
+    BastionSecurityGroup:
+        Type: 'AWS::EC2::SecurityGroup'
+        Properties:
+            GroupDescription: 'Bastion host security group'
+            SecurityGroupIngress:
+                - IpProtocol: 'tcp'
+                    FromPort: '22'
+                    ToPort: '22'
+                    CidrIp: 'your-ip-address/32'
 ```
 
 Restrict SSH access to your instances through the bastion host.
 
 ## 7. **Encrypt Data at Rest and in Transit**
 
-Encrypt your data to protect it from unauthorized access.
+Encrypt your data to protect it from unauthorized access. [Learn more about data encryption](https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingEncryption.html).
 
 ### CloudFormation Template:
 ```yaml
 Resources:
-  MyBucket:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: 'my-secure-bucket'
-      VersioningConfiguration:
-        Status: 'Enabled'
-      ServerSideEncryptionConfiguration:
-        Rules:
-          - ApplyServerSideEncryptionByDefault:
-              SSEAlgorithm: 'AES256'
+    MyBucket:
+        Type: 'AWS::S3::Bucket'
+        Properties:
+            BucketName: 'my-secure-bucket'
+            VersioningConfiguration:
+                Status: 'Enabled'
+            ServerSideEncryptionConfiguration:
+                Rules:
+                    - ApplyServerSideEncryptionByDefault:
+                            SSEAlgorithm: 'AES256'
 ```
 
 Use Amazon EBS encryption for your volumes and enable SSL/TLS for data in transit.
 
 ## 8. **Implement Multi-Factor Authentication (MFA)**
 
-Adding MFA enhances security for your AWS account and IAM users.
+Adding MFA enhances security for your AWS account and IAM users. [Learn more about MFA](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html).
 
 ### Best Practices:
 - Enable MFA in the AWS Management Console.
@@ -183,42 +183,42 @@ Adding MFA enhances security for your AWS account and IAM users.
 
 ## 9. **Use EBS Block Store and Perform Regular Backups**
 
-Using Amazon EBS for block storage ensures durability and high performance. Regular backups protect your data from accidental loss.
+Using Amazon EBS for block storage ensures durability and high performance. Regular backups protect your data from accidental loss. [Learn more about EBS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AmazonEBS.html) and [AWS Backup](https://docs.aws.amazon.com/aws-backup/latest/devguide/whatisbackup.html).
 
 ### CloudFormation Template:
 ```yaml
 Resources:
-  EC2Instance:
-    Type: 'AWS::EC2::Instance'
-    Properties:
-      KeyName: 'your-key-pair'
-      ImageId: 'ami-0123456789abcdef0'
-      InstanceType: 't2.micro'
-      BlockDeviceMappings:
-        - DeviceName: '/dev/sdh'
-          Ebs:
-            VolumeSize: 20
-            VolumeType: 'gp2'
-            Encrypted: true
+    EC2Instance:
+        Type: 'AWS::EC2::Instance'
+        Properties:
+            KeyName: 'your-key-pair'
+            ImageId: 'ami-0123456789abcdef0'
+            InstanceType: 't2.micro'
+            BlockDeviceMappings:
+                - DeviceName: '/dev/sdh'
+                    Ebs:
+                        VolumeSize: 20
+                        VolumeType: 'gp2'
+                        Encrypted: true
 
-  BackupPlan:
-    Type: 'AWS::Backup::BackupPlan'
-    Properties:
-      BackupPlan:
-        BackupPlanName: 'MyBackupPlan'
-        Rules:
-          - RuleName: 'DailyBackups'
-            TargetBackupVault: !Ref BackupVault
-            ScheduleExpression: 'cron(0 12 * * ? *)'
-            StartWindowMinutes: 60
-            CompletionWindowMinutes: 180
-            Lifecycle:
-              DeleteAfterDays: 30
+    BackupPlan:
+        Type: 'AWS::Backup::BackupPlan'
+        Properties:
+            BackupPlan:
+                BackupPlanName: 'MyBackupPlan'
+                Rules:
+                    - RuleName: 'DailyBackups'
+                        TargetBackupVault: !Ref BackupVault
+                        ScheduleExpression: 'cron(0 12 * * ? *)'
+                        StartWindowMinutes: 60
+                        CompletionWindowMinutes: 180
+                        Lifecycle:
+                            DeleteAfterDays: 30
 
-  BackupVault:
-    Type: 'AWS::Backup::BackupVault'
-    Properties:
-      BackupVaultName: 'MyBackupVault'
+    BackupVault:
+        Type: 'AWS::Backup::BackupVault'
+        Properties:
+            BackupVaultName: 'MyBackupVault'
 ```
 
 This template sets up an EBS volume with encryption and configures a backup plan to perform daily backups.
